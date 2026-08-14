@@ -1,11 +1,102 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Index</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <title>台北一日遊</title>
 </head>
 <body>
-  
+  <nav>
+    <div class="navigation">
+
+      <div class="logo">
+        台北一日遊
+      </div>
+
+      <div class="nav-menu">
+        <div class="nav-item">預定行程</div>
+        <div class="nav-item">登入/註冊</div>
+      </div>
+
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="hero-content">
+
+        <div class="hero-text">
+          <h1>輕鬆享受台北一日悠閒</h1>
+          <p>探索每個角落，體驗城市的深度旅遊行程</p>
+        </div>
+
+        <div class="search-bar">
+
+          <div class="category-selector">
+            全部分類▼
+          </div>
+          
+          <div class="category-panel">
+            <!-- JavaScript 動態加入分類名稱 -->
+          </div>
+
+
+          <input
+            class="search-input"
+            type="text"
+            placeholder="輸入景點名稱查詢"
+          >
+
+          <button class="search-button">
+            <img src="/static/icon_search image.png" alt="搜尋">
+          </button>
+
+        </div>
+
+      </div>
+    </section>
+
+    <section class="attraction-section">
+      <div class="list-bar">
+
+        <button class="arrow-button left">
+          <img src="/static/left image.png" alt="向左">
+        </button>
+
+        <!-- JavaScript 之後會把 MRT 名稱放進來 -->
+        <div class="mrt-list">
+          <div class="mrt-list-container">
+            <!-- JavaScript 動態加入 mrt-item -->
+          </div>
+        </div>
+
+        <button class="arrow-button right">
+          <img src="/static/right image.png" alt="向右">
+        </button>
+
+      </div>
+
+      <!-- JavaScript 之後會把景點卡片放進來 -->
+      <div class="attraction-list">
+        <div class="attractions-group">
+          <!-- JavaScript 動態加入 attraction -->
+        </div>
+      </div>
+
+      <!-- 用來偵測使用者是否滑到景點列表底部 -->
+      <div class="observer"></div>
+
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-content">
+      COPYRIGHT © 2021 台北一日遊
+    </div>
+  </footer>
+
+  <script src="/static/script.js"></script>
+
 </body>
 </html>
