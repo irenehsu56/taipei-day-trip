@@ -445,7 +445,7 @@ footer {
 /* Mobile */
 @media (max-width: 600px) {
     main {
-        padding-top: 94px;
+        padding-top: 54px;
     }
     .attraction-section {
         width: 100%;
