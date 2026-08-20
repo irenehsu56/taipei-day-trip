@@ -242,6 +242,11 @@ async function loadAttractions(page, category = "", keyword = "") {
             // 建立 attraction
             const attraction = document.createElement("div");
             attraction.className = "attraction";
+            // 點擊景點卡片時，前往該景點的詳細頁面
+            attraction.addEventListener("click", () => {
+                window.location.href = `/attraction/${attractionData.id}`;
+            });
+            
             // 建立 picture
             const picture = document.createElement("div");
             picture.className = "picture";

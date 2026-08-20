@@ -1,0 +1,556 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: "Noto Sans TC", sans-serif;
+}
+/* ================================================== */
+nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+
+    width: 100%;
+    height: 54px;
+
+    display: flex;
+    align-items: center;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E8E8E8;
+}
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    width: 100%;
+    max-width: 1200px;
+    padding: 0 10px;
+    margin: 0 auto;
+}
+.logo {
+    width: 150px;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 34px;
+    color: #448899;
+
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.logo a {
+    color: #448899;
+    text-decoration: none;
+}
+.nav-menu {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+.nav-item {
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 14px;
+    color: #666666;
+    white-space: nowrap;
+    cursor: pointer;
+}
+/* ================================================== */
+main {
+    padding-top: 94px;
+}
+.attraction-section {
+    width: 100%;
+    max-width: 1200px;
+    height: 400px;
+    margin: 0 auto;
+
+    display: flex;
+}
+.picture-current {
+    position: relative;
+
+    width: 540px;
+    height: 400px;
+    margin-left: 15px;
+
+    border-radius: 5px;
+    overflow: hidden;
+}
+.attraction-image {
+    width: 100%;
+    height: 406px;
+
+    position: relative;
+    top: -3px;
+
+    object-fit: cover;
+    display: block;
+}
+.picture-arrow {
+    position: absolute;
+    top: 182px;
+
+    width: 36px;
+    height: 36px;
+    padding: 0;
+
+    border: none;
+    background: none;
+
+    opacity: 0.75;
+    cursor: pointer;
+}
+.picture-arrow img {
+    width: 36px;
+    height: 36px;
+    display: block;
+}
+.picture-arrow-left {
+    left: 10px;
+}
+.picture-arrow-right {
+    right: 10px;
+}
+.indicator-bar {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+
+    width: 100%;
+    height: 5px;
+
+    display: flex;
+    gap: 5px;
+    opacity: 0.75;
+}
+.indicator {
+    height: 5px;
+    flex: 1;
+
+    background-color: #FFFFFF;
+}
+.indicator.active {
+    background-color: #000000;
+}
+/* ================================================== */
+.profile {
+    width: 600px;
+    height: 400px;
+    margin-left: 30px;
+}
+.attraction-title {
+    width: 100%;
+    height: 33px;
+
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 24px;
+    color: #666666;
+}
+.attraction-category-mrt {
+    width: 100%;
+    height: 22px;
+    margin-top: 15px;
+
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 13.3px;
+    color: #666666;
+}
+.booking-form {
+    width: 600px;
+    height: 302px;
+    margin-top: 20px;
+    padding: 15px 20px;
+
+    background-color: #E8E8E8;
+    border-radius: 5px;
+}
+.booking-title {
+    height: 22px;
+
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 13.3px;
+    color: #666666;
+}
+.booking-description {
+    height: 24px;
+    margin-top: 15px;
+
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 13.3px;
+    color: #666666;
+}
+.booking-date {
+    height: 35px;
+    margin-top: 15px;
+
+    display: flex;
+    align-items: center;
+
+    font-size: 16px;
+    font-weight: 700;
+    color: #666666;
+}
+#booking-date-input {
+    width: 193px;
+    height: 35px;
+    margin-left: 5px;
+
+    border: none;
+    outline: none;
+
+    background-color: #FFFFFF;
+    font-size: 16px;
+    font-weight: 400;
+    color: #000000;
+}
+#booking-date-input::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+}
+.booking-time {
+    height: 22px;
+    margin-top: 15px;
+
+    display: flex;
+    align-items: center;
+
+    font-size: 16px;
+    color: #666666;
+}
+.booking-time .booking-label {
+    font-weight: 700;
+}
+.time-option {
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+
+    font-weight: 400;
+    cursor: pointer;
+}
+.time-option input {
+    width: 22px;
+    height: 22px;
+    margin: 0 5px 0 0;
+    accent-color: #448899;
+}
+.booking-price {
+    height: 22px;
+    margin-top: 15px;
+
+    display: flex;
+    align-items: center;
+
+    font-size: 16px;
+    color: #666666;
+}
+.booking-price .booking-label {
+    font-weight: 700;
+    margin-right: 5px;
+}
+.booking-price span:last-child {
+    font-weight: 400;
+}
+.booking-button {
+    height: 36px;
+    margin-top: 25px;
+    padding: 10px 20px;
+
+    background-color: #448899;
+    border: none;
+    border-radius: 5px;
+
+    font-size: 19px;
+    font-weight: 400;
+    line-height: 16px;
+    color: #FFFFFF;
+    cursor: pointer;
+}
+/* ================================================== */
+.main-separator {
+    width: 100%;
+    max-width: 1200px;
+    margin: 40px auto 0;
+
+    border-top: 1px solid #E8E8E8;
+}
+.attraction-info {
+    width: 100%;
+    max-width: 1200px;
+    min-height: 362px;
+    margin: 40px auto 0;
+    padding: 10px;
+}
+.attraction-description {
+    width: 100%;
+    min-height: 96px;
+
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #666666;
+
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+.address-block {
+    width: 100%;
+    margin-top: 20px;
+}
+.info-title {
+    height: 32px;
+
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 13.3px;
+    color: #666666;
+}
+.attraction-address {
+    margin-top: 0;
+
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #666666;
+}
+.transport-block {
+    width: 100%;
+    margin-top: 20px;
+}
+.attraction-transport {
+    margin-top: 0;
+
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #666666;
+
+    white-space: normal;
+    overflow-wrap: break-word;
+}
+/* ================================================== */
+footer {
+    height: 104px;
+    margin-top: 40px;
+    background-color: #757575;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.footer-content {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 13.3px;
+    color: #FFFFFF;
+}
+/* ================================================== */
+/* Tablet */
+@media (max-width: 1200px) and (min-width: 601px) {
+    main {
+        padding-top: 94px;
+    }
+    .attraction-section {
+        width: calc(100% - 40px);
+        max-width: none;
+        height: auto;
+        margin: 0 auto;
+
+        display: flex;
+        flex-direction: column;
+    }
+    .picture-current {
+        width: 100%;
+        height: 400px;
+        margin-left: 0;
+    }
+    .attraction-image {
+        width: 100%;
+        height: 100%;
+        top: 0;
+        object-fit: cover;
+    }
+    .profile {
+        width: 100%;
+        height: auto;
+        margin-top: 30px;
+        margin-left: 0;
+    }
+    .booking-form {
+        width: 100%;
+        height: 302px;
+    }
+    .booking-description {
+        width: 100%;
+        height: auto;
+
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+    .main-separator {
+        width: calc(100% - 40px);
+        margin-top: 40px;
+    }
+    .attraction-info {
+        position: static;
+
+        width: calc(100% - 40px);
+        max-width: none;
+        height: auto;
+        margin: 40px auto 0;
+    }
+    .attraction-description {
+        position: static;
+
+        width: 100%;
+        height: auto;
+        line-height: 1.5;
+
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+    .address-block {
+        position: static;
+
+        width: 100%;
+        margin-top: 30px;
+    }
+    .info-title {
+        height: auto;
+    }
+    .attraction-address {
+        line-height: 1.5;
+    }
+    .transport-block {
+        position: static;
+
+        width: 100%;
+        margin-top: 30px;
+    }
+    .attraction-transport {
+        line-height: 1.5;
+
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+}
+/* ================================================== */
+/* Mobile */
+@media (max-width: 600px) {
+    main {
+        padding-top: 94px;
+    }
+    .attraction-section {
+        width: 100%;
+        max-width: none;
+        height: auto;
+
+        display: flex;
+        flex-direction: column;
+    }
+    .picture-current {
+        width: calc(100% - 20px);
+        height: 350px;
+        margin: 0 10px;
+        border-radius: 5px;
+    }
+    .attraction-image {
+        width: 100%;
+        height: 100%;
+
+        position: static;
+
+        object-fit: cover;
+        object-position: center;
+    }
+    .picture-arrow {
+        top: 157px;
+    }
+    .picture-arrow-left {
+        left: 10px;
+    }
+    .picture-arrow-right {
+        right: 10px;
+    }
+    .indicator-bar {
+        width: 100%;
+        height: 5px;
+
+        left: 0;
+        bottom: 0;
+    }
+    .profile {
+        width: calc(100% - 20px);
+        height: 390px;
+        margin: 20px 10px 0;
+    }
+    .attraction-title {
+        width: 100%;
+        height: 33px;
+    }
+    .attraction-category-mrt {
+        width: 100%;
+        height: 22px;
+        margin-top: 15px;
+    }
+    .booking-form {
+        width: 100%;
+        height: 300px;
+        margin-top: 20px;
+        padding: 15px 20px;
+    }
+    .booking-description {
+        width: 300px;
+        height: auto;
+        margin-top: 15px;
+        line-height: 1.5;
+    }
+    .booking-time {
+        height: 22px;
+        margin-top: 15px;
+    }
+    .booking-price {
+        height: 22px;
+        margin-top: 15px;
+    }
+    .main-separator {
+        width: calc(100% - 20px);
+        margin: 40px auto 0;
+    }
+    .attraction-info {
+        width: calc(100% - 20px);
+        min-height: 712px;
+        margin: 40px auto 0;
+        padding: 10px;
+    }
+    .attraction-description {
+        width: 100%;
+        height: auto;
+
+        line-height: 1.5;
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+    .address-block {
+        width: 100%;
+        margin-top: 20px;
+    }
+    .transport-block {
+        width: 100%;
+        margin-top: 20px;
+    }
+    .attraction-address,
+    .attraction-transport {
+        line-height: 1.5;
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+}

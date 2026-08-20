@@ -6,18 +6,19 @@
 body {
     font-family: "Noto Sans TC", sans-serif;
 }
-/* ==================================================*/
+/* ================================================== */
 nav {
     position: fixed;
     top: 0;
     left: 0;
+    z-index: 1000;
 
     width: 100%;
     height: 54px;
+
     display: flex;
     align-items: center;
     background-color: #FFFFFF;
-    z-index: 1000;
 }
 .navigation {
     display: flex;
@@ -37,6 +38,10 @@ nav {
     white-space: nowrap;
     flex-shrink: 0;
 }
+.logo a {
+    color: #448899;
+    text-decoration: none;
+}
 .nav-menu {
     display: flex;
     align-items: center;
@@ -51,7 +56,7 @@ nav {
     white-space: nowrap;
     cursor: pointer;
 }
-/* ==================================================*/
+/* ================================================== */
 main {
     padding-top: 54px;
 }
@@ -181,7 +186,7 @@ main {
     width: 30px;
     height: 30px;
 }
-/* ==================================================*/
+/* ================================================== */
 .attraction-section {
     padding: 40px 0;
 }
@@ -234,7 +239,7 @@ main {
     white-space: nowrap;
     cursor: pointer;
 }
-/* ==================================================*/
+/* ================================================== */
 .attraction-list {
     width: 1200px;
     margin: 0 auto;
@@ -252,6 +257,7 @@ main {
     border-radius: 5px;
     background-color: #FFFFFF;
     overflow: hidden;
+    cursor: pointer;
 }
 .picture {
     position: relative;
@@ -309,7 +315,7 @@ main {
     width: 125px;
     text-align: right;
 }
-/* ==================================================*/
+/* ================================================== */
 footer {
     height: 104px;
     background-color: #757575;
@@ -324,7 +330,7 @@ footer {
     line-height: 13.3px;
     color: #FFFFFF;
 }
-/* ==================================================*/
+/* ================================================== */
 /* Tablet */
 @media (max-width: 1200px) and (min-width: 601px) {
     .attraction-list {
@@ -350,7 +356,7 @@ footer {
         width: 50%;
     }
 }
-/* ==================================================*/
+/* ================================================== */
 /* Mobile */
 @media (max-width: 600px) {
     .hero-text {
