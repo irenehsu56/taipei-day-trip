@@ -125,7 +125,6 @@ main {
     height: 5px;
 
     display: flex;
-    gap: 5px;
     opacity: 0.75;
 }
 .indicator {
@@ -457,10 +456,10 @@ footer {
         flex-direction: column;
     }
     .picture-current {
-        width: calc(100% - 20px);
+        width: 100%;
         height: 350px;
-        margin: 0 10px;
-        border-radius: 5px;
+        margin: 0;
+        border-radius: 0;
     }
     .attraction-image {
         width: 100%;
