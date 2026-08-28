@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="/static/attraction.css">
+  <link rel="stylesheet" href="/static/css/attraction.css">
+  <link rel="stylesheet" href="/static/css/member.css">
   <title>台北一日遊</title>
 </head>
 <body>
@@ -16,13 +17,111 @@
 
       <div class="nav-menu">
         <div class="nav-item">預定行程</div>
-        <div class="nav-item">登入/註冊</div>
+        <div class="nav-item" id="login-register-button">登入/註冊</div>
       </div>
 
     </div>
   </nav>
 
-    <main>
+  <!-- 會員登入 / 註冊視窗 -->
+  <div class="dialog-overlay" id="dialog-overlay">
+    <div class="member-dialog" id="signin-dialog">
+      <!-- Dialog 上方裝飾色條 -->
+      <div class="dialog-decorator"></div>
+
+      <button class="dialog-close" id="dialog-close">
+        <img src="/static/images/close.png" alt="關閉">
+      </button>
+
+      <div class="dialog-main">
+        <h2 class="dialog-title">登入會員帳號</h2>
+
+        <div class="dialog-form">
+          <input
+            type="email"
+            id="signin-email"
+            class="dialog-input"
+            placeholder="輸入電子信箱"
+          >
+
+          <input
+            type="password"
+            id="signin-password"
+            class="dialog-input"
+            placeholder="輸入密碼"
+          >
+
+          <button
+            type="button"
+            class="dialog-button"
+            id="signin-button"
+          >
+            登入帳戶
+          </button>
+        </div>
+
+        <!-- 登入錯誤訊息之後會由 JavaScript 放進來 -->
+        <div class="dialog-message" id="signin-message"></div>
+
+        <div class="dialog-switch">
+          還沒有帳戶？<span id="show-signup">點此註冊</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="member-dialog" id="signup-dialog">
+      <!-- Dialog 上方裝飾色條 -->
+      <div class="dialog-decorator"></div>
+
+      <button class="dialog-close" id="signup-close">
+        <img src="/static/images/close.png" alt="關閉">
+      </button>
+
+      <div class="dialog-main">
+        <h2 class="dialog-title">註冊會員帳號</h2>
+
+        <div class="dialog-form">
+          <input
+            type="text"
+            id="signup-name"
+            class="dialog-input"
+            placeholder="輸入姓名"
+          >
+
+          <input
+            type="email"
+            id="signup-email"
+            class="dialog-input"
+            placeholder="輸入電子郵件"
+          >
+
+          <input
+            type="password"
+            id="signup-password"
+            class="dialog-input"
+            placeholder="輸入密碼"
+          >
+
+          <button
+            type="button"
+            class="dialog-button"
+            id="signup-button"
+          >
+            註冊新帳戶
+          </button>
+        </div>
+
+        <!-- 註冊錯誤訊息之後會由 JavaScript 放進來 -->
+        <div class="dialog-message" id="signup-message"></div>
+
+        <div class="dialog-switch">
+          已經有帳戶了？<span id="show-signin">點此登入</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main>
     <section class="attraction-section">
 
       <div class="picture-current">
@@ -30,11 +129,11 @@
         <img class="attraction-image" src="" alt="景點圖片">
 
         <button class="picture-arrow picture-arrow-left">
-          <img src="/static/left_arrow.png" alt="上一張">
+          <img src="/static/images/left_arrow.png" alt="上一張">
         </button>
 
         <button class="picture-arrow picture-arrow-right">
-          <img src="/static/right_arrow.png" alt="下一張">
+          <img src="/static/images/right_arrow.png" alt="下一張">
         </button>
 
         <div class="indicator-bar">
@@ -123,7 +222,8 @@
     </div>
   </footer>
 
-  <script src="/static/attraction.js"></script>
+  <script src="/static/js/attraction.js"></script>
+  <script src="/static/js/member.js"></script>
 
 </body>
 </html>

@@ -3,9 +3,17 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 import mysql.connector
 import json
+from pydantic import BaseModel
+import jwt
+from datetime import datetime, timedelta, timezone
 app=FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# JWT 設定
+SECRET_KEY = "taipei-day-trip-secret-key"
+ALGORITHM = "HS256"
+
+# ==================================================================
 # Static Pages (Never Modify Code in this Block)
 @app.get("/", include_in_schema=False)
 async def index(request: Request):
@@ -19,6 +27,223 @@ async def booking(request: Request):
 @app.get("/thankyou", include_in_schema=False)
 async def thankyou(request: Request):
 	return FileResponse("./static/thankyou.html", media_type="text/html")
+
+# ==================================================================
+# 會員註冊資料格式
+class UserSignup(BaseModel):
+	name: str
+	email: str
+	password: str
+
+# 會員登入資料格式
+class UserSignin(BaseModel):
+	email: str
+	password: str
+
+# ==================================================================
+# API：註冊一個新的會員
+@app.post("/api/user")
+async def signup(user: UserSignup):
+
+	# 預先設定為 None，避免資料庫連線失敗時無法執行 finally
+	connection = None
+	cursor = None
+
+	try:
+		# 連接 MySQL 資料庫
+		connection = mysql.connector.connect(
+			host="localhost",
+			user="root",
+			password="123456",
+			database="taipei_day_trip"
+		)
+
+		# dictionary=True 讓查詢結果可以用欄位名稱存取
+		cursor = connection.cursor(dictionary=True)
+
+		# 檢查 Email 是否已經註冊過
+		cursor.execute("""
+			SELECT id
+			FROM users
+			WHERE email = %s
+		""", (user.email,))
+
+		# 取得查詢結果
+		existing_user = cursor.fetchone()
+
+		# 如果 Email 已經存在，回傳 HTTP 400
+		if existing_user is not None:
+			return JSONResponse(
+				status_code=400,
+				content={
+					"error": True,
+					"message": "註冊失敗，重複的 Email 或其他原因"
+				}
+			)
+
+		# 將新會員資料新增到 users 資料表
+		cursor.execute("""
+			INSERT INTO users (name, email, password)
+			VALUES (%s, %s, %s)
+		""", (user.name, user.email, user.password))
+
+		# 儲存資料庫的變更
+		connection.commit()
+
+		# 新會員註冊成功，回傳 HTTP 200
+		return {
+			"ok": True
+		}
+
+	except Exception as error:
+		# 在終端機顯示實際錯誤，方便開發時除錯
+		print(error)
+
+		# 資料庫連線或操作失敗時，回傳 HTTP 500
+		return JSONResponse(
+			status_code=500,
+			content={
+				"error": True,
+				"message": "伺服器內部錯誤"
+			}
+		)
+	
+	finally:
+		# 無論 API 正常或發生錯誤，都要關閉 cursor
+		if cursor is not None:
+			cursor.close()
+
+		# 確認資料庫連線已建立且仍保持連線，再將它關閉
+		if connection is not None and connection.is_connected():
+			connection.close()
+
+# ==================================================================
+# API：登入會員帳戶
+@app.put("/api/user/auth")
+async def signin(user: UserSignin):
+
+	# 預先設定為 None，避免資料庫連線失敗時無法執行 finally
+	connection = None
+	cursor = None
+
+	try:
+		# 連接 MySQL 資料庫
+		connection = mysql.connector.connect(
+			host="localhost",
+			user="root",
+			password="123456",
+			database="taipei_day_trip"
+		)
+
+		# dictionary=True 讓查詢結果可以用欄位名稱存取
+		cursor = connection.cursor(dictionary=True)
+
+		# 根據 Email 和密碼查詢會員資料
+		cursor.execute("""
+			SELECT id, name, email
+			FROM users
+			WHERE email = %s AND password = %s
+		""", (user.email, user.password))
+
+		# 取得查詢結果
+		member = cursor.fetchone()
+
+		# 如果找不到符合的會員資料，代表 Email 或密碼錯誤
+		if member is None:
+			return JSONResponse(
+				status_code=400,
+				content={
+					"error": True,
+					"message": "登入失敗，帳號或密碼錯誤或其他原因"
+				}
+			)
+
+		# 設定 Token 內容，包含會員資料與 7 天後的到期時間
+		payload = {
+			"id": member["id"],
+			"name": member["name"],
+			"email": member["email"],
+			"exp": datetime.now(timezone.utc) + timedelta(days=7)
+		}
+
+		# 使用 JWT 將會員資料編碼成 Token
+		token = jwt.encode(
+			payload,
+			SECRET_KEY,
+			algorithm=ALGORITHM
+		)
+
+		# 登入成功，回傳 JWT Token
+		return {
+			"token": token
+		}
+		
+	except Exception as error:
+		# 在終端機顯示實際錯誤，方便開發時除錯
+		print(error)
+
+		# 資料庫連線或操作失敗時，回傳 HTTP 500
+		return JSONResponse(
+			status_code=500,
+			content={
+				"error": True,
+				"message": "伺服器內部錯誤"
+			}
+		)
+		
+	finally:
+		# 無論 API 正常或發生錯誤，都要關閉 cursor
+		if cursor is not None:
+			cursor.close()
+
+		# 確認資料庫連線已建立且仍保持連線，再將它關閉
+		if connection is not None and connection.is_connected():
+			connection.close()
+
+# ==================================================================
+# API：取得當前登入的會員資訊
+@app.get("/api/user/auth")
+async def get_current_user(authorization: str | None = Header(default=None)):
+
+	# 如果沒有 Authorization Header，代表目前未登入
+	if authorization is None:
+		return {
+			"data": None
+		}
+
+	# 如果 Authorization Header 不是以 Bearer 開頭，代表 Token 格式不正確
+	if not authorization.startswith("Bearer "):
+		return {
+			"data": None
+		}
+
+	# 移除 Bearer 前綴，取得真正的 JWT Token
+	token = authorization.replace("Bearer ", "", 1)
+
+	try:
+		# 使用 JWT 解碼並驗證 Token
+		payload = jwt.decode(
+			token,
+			SECRET_KEY,
+			algorithms=[ALGORITHM]
+		)
+
+		# Token 驗證成功，回傳目前登入的會員資料
+		return {
+			"data": {
+				"id": payload["id"],
+				"name": payload["name"],
+				"email": payload["email"]
+			}
+		}
+
+	except Exception as error:
+		# Token 驗證失敗、格式錯誤或已過期時，視為未登入
+		print(error)
+
+		return {
+			"data": None
+		}
 
 # ==================================================================
 # API：取得景點資料(取得不同分頁的旅遊景點列表資料，也可以根據標題關鍵字、或捷運站名稱篩選)
