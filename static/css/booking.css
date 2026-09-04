@@ -1,0 +1,504 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: "Noto Sans TC", sans-serif;
+}
+/* ================================================== */
+nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+
+    width: 100%;
+    height: 54px;
+
+    display: flex;
+    align-items: center;
+    background-color: #FFFFFF;
+    border-bottom: 1px solid #E8E8E8;
+}
+.navigation {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    width: 100%;
+    max-width: 1200px;
+    padding: 0 10px;
+    margin: 0 auto;
+}
+.logo {
+    width: 150px;
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 34px;
+    color: #448899;
+
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+.logo a {
+    color: #448899;
+    text-decoration: none;
+}
+.nav-menu {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+.nav-item {
+    padding: 10px;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 14px;
+    color: #666666;
+    white-space: nowrap;
+    cursor: pointer;
+}
+/* ================================================== */
+main {
+  padding-top: 94px;
+}
+.booking-headline {
+  width: 100%;
+  max-width: 1000px;
+  height: 27px;
+  margin: 0 auto;
+
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 16px;
+  color: #666666;
+
+  display: flex;
+  align-items: center;
+}
+.booking-section {
+  position: relative;
+
+  width: 100%;
+  max-width: 980px;
+  height: 200px;
+
+  margin: 30px auto 0;
+  display: flex;
+}
+.booking-picture {
+  width: 250px;
+  height: 200px;
+
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.booking-picture img {
+  width: 266px;
+  height: 200px;
+
+  position: relative;
+  left: -8px;
+
+  object-fit: cover;
+  display: block;
+}
+.booking-information {
+  width: 700px;
+  height: 170px;
+
+  margin-left: 30px;
+  color: #666666;
+}
+.booking-info-row {
+  width: 700px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 13.3px;
+  color: #666666;
+}
+/* 一般每列間隔 10px */
+.booking-info-row + .booking-info-row {
+  margin-top: 10px;
+}
+/* 唯獨景點名稱後面的日期，間隔 20px */
+.booking-info-title + .booking-info-row {
+  margin-top: 20px;
+}
+.booking-info-title {
+  font-weight: 700;
+  color: #448899;
+}
+.booking-info-label {
+  font-weight: 700;
+  margin-right: 5px;
+}
+.booking-delete-button {
+  position: absolute;
+  top: 0;
+  right: 0;
+
+  width: 30px;
+  height: 30px;
+  padding: 0;
+
+  border: none;
+  background: none;
+  cursor: pointer;
+}
+.booking-delete-button img {
+  width: 30px;
+  height: 30px;
+
+  display: block;
+}
+.main-separator {
+  width: 100%;
+  max-width: 1200px;
+
+  margin: 40px auto 0;
+  border-top: 1px solid #E8E8E8;
+}
+/* ================================================== */
+.contact-form {
+  width: 100%;
+  max-width: 980px;
+  height: 227px;
+  margin: 40px auto 0;
+}
+.contact-title {
+  width: 100%;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 16px;
+  color: #666666;
+}
+.contact-field {
+  width: 100%;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 13.3px;
+  color: #666666;
+}
+.contact-title + .contact-field {
+  margin-top: 20px;
+}
+.contact-field + .contact-field {
+  margin-top: 15px;
+}
+.contact-field label {
+  width: 81px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.contact-field input {
+  width: 200px;
+  height: 38px;
+  padding: 10px;
+
+  background-color: #FFFFFF;
+  border: 1px solid #E8E8E8;
+  border-radius: 5px;
+  outline: none;
+
+  font-family: "Noto Sans TC", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 13.3px;
+  color: #000000;
+}
+.contact-notice {
+  width: 608px;
+  height: 24px;
+
+  margin-top: 15px;
+  display: flex;
+  align-items: center;
+
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 13.3px;
+  color: #666666;
+}
+/* ================================================== */
+.payment {
+  width: 100%;
+  max-width: 980px;
+  height: 188px;
+
+  margin: 40px auto 0;
+}
+.payment-title {
+  width: 100%;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 16px;
+  color: #666666;
+}
+.payment-field {
+  width: 100%;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 13.3px;
+  color: #666666;
+}
+.payment-title + .payment-field {
+  margin-top: 20px;
+}
+.payment-field + .payment-field {
+  margin-top: 15px;
+}
+.payment-field label {
+  width: 81px;
+  height: 24px;
+
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 13.3px;
+  color: #666666;
+}
+.payment-field input {
+  width: 200px;
+  height: 38px;
+  padding: 10px;
+
+  background-color: #FFFFFF;
+  border: 1px solid #E8E8E8;
+  border-radius: 5px;
+  outline: none;
+
+  font-family: "Noto Sans TC", sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 13.3px;
+  color: #000000;
+}
+.payment-field input::placeholder {
+  color: #757575;
+  opacity: 1;
+}
+/* ================================================== */
+.confirm {
+  width: 100%;
+  max-width: 980px;
+  height: 100px;
+  margin: 40px auto 0;
+
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+.confirm-total {
+  width: 174px;
+  height: 20px;
+
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 13.3px;
+  color: #666666;
+
+  white-space: nowrap;
+}
+.confirm-button {
+  width: 173px;
+  height: 36px;
+  margin-top: 22px;
+  padding: 10px 20px;
+
+  background-color: #448899;
+  border: none;
+  border-radius: 5px;
+
+  font-family: "Noto Sans TC", sans-serif;
+  font-size: 19px;
+  font-weight: 400;
+  line-height: 16px;
+  color: #FFFFFF;
+
+  cursor: pointer;
+}
+/* ================================================== */
+footer {
+    height: 104px;
+    margin-top: 40px;
+    background-color: #757575;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.footer-content {
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 13.3px;
+    color: #FFFFFF;
+}
+/* ================================================== */
+.booking-empty-state {
+  width: 100%;
+  max-width: 1000px;
+  height: 24px;
+
+  margin: 30px auto 0;
+  padding: 0 10px;
+
+  display: flex;
+  align-items: center;
+
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 13.3px;
+  color: #666666;
+}
+body.booking-empty {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+body.booking-empty main {
+  flex-shrink: 0;
+}
+body.booking-empty footer {
+  flex: 1;
+  align-items: flex-start;
+  padding-top: 40px;
+}
+/* ================================================== */
+/* Tablet */
+@media (max-width: 1200px) and (min-width: 601px){
+    .booking-headline,
+    .booking-empty-state  {
+        width: calc(100% - 40px);
+        max-width: 1000px;
+    }
+    .booking-section {
+        width: calc(100% - 40px);
+        height: 200px;
+    }
+    .booking-information {
+        flex: 1;
+        width: auto;
+    }
+    .booking-info-row {
+        width: 100%;
+        height: auto;
+        min-height: 24px;
+    }
+    .booking-delete-button {
+        top:auto;
+        bottom:0;
+        right:0;
+    }
+    .main-separator,
+    .payment,
+    .confirm {
+        width: calc(100% - 40px);
+    }
+    .contact-form {
+        width: calc(100% - 40px);
+        height: auto;
+        min-height: 227px;
+    }
+    .contact-notice {
+        width: 100%;
+        height: auto;
+        min-height: 24px;
+        line-height: 24px;
+    }
+}
+/* ================================================== */
+/* Mobile */
+@media (max-width: 600px){
+    .booking-headline {
+        padding: 0 10px;
+    }
+    .booking-section {
+        height: auto;
+        flex-direction: column;
+    }
+    .booking-picture {
+        width: calc(100% - 20px);
+        margin: 0 10px;
+    }
+    .booking-picture img {
+        width: 100%;
+        height: 256px;
+
+        left: 0;
+        top: -28px;
+    }
+    .booking-information {
+        width: calc(100% - 20px);
+        height: 200px;
+        margin: 30px 10px 0;
+    }
+    .booking-info-row {
+        width: 100%;
+    }
+    .booking-delete-button {
+        top: 400px;
+        right: 10px;
+    }
+    .main-separator {
+        width: calc(100% - 20px);
+        margin-top: 30px;
+    }
+    .contact-form {
+        width: calc(100% - 20px);
+        height: 256px;
+    }
+    .contact-notice {
+        width: 100%;
+        height: 48px;
+        line-height: 16px;
+    }
+    .contact-form + .main-separator {
+        margin-top: 40px;
+    }
+    .payment {
+        width: calc(100% - 20px);
+    }
+    .payment + .main-separator {
+        margin-top: 40px;
+    }
+    .confirm {
+        width: calc(100% - 20px);
+    }
+}

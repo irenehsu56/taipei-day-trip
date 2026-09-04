@@ -1,3 +1,5 @@
+// 取得預定行程按鈕
+const bookingButton = document.querySelector("#booking-button");
 // 取得登入 / 註冊按鈕
 const loginRegisterButton = document.querySelector("#login-register-button");
 // 取得 Dialog 背景遮罩
@@ -34,6 +36,39 @@ const signupPassword = document.querySelector("#signup-password");
 const signupButton = document.querySelector("#signup-button");
 // 取得註冊訊息區塊
 const signupMessage = document.querySelector("#signup-message");
+
+// ===========================================================
+// 點擊「預定行程」時，依登入狀態執行對應功能
+bookingButton.addEventListener("click", async () => {
+    // 從 LocalStorage 取得 JWT Token
+    const token = localStorage.getItem("token");
+
+    // 呼叫後端 API：確認目前會員登入狀態
+    const response = await fetch("/api/user/auth", {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+
+    // 將 API 回傳資料轉成 JavaScript 物件
+    const result = await response.json();
+
+    // 如果目前沒有登入會員
+    if (result.data === null) {
+        // 顯示 Dialog 背景遮罩
+        dialogOverlay.style.display = "block";
+        // 顯示登入 Dialog
+        signinDialog.style.display = "block";
+        // 隱藏註冊 Dialog
+        signupDialog.style.display = "none";
+
+        return;
+    }
+
+    // 如果已經登入，前往預定行程頁面
+    window.location.href = "/booking";
+});
 
 // ===========================================================
 // 點擊右上角會員按鈕時，依登入狀態執行對應功能
