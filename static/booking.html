@@ -1,11 +1,320 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-TW">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Booking</title>
+  <link rel="stylesheet" href="/static/css/booking.css">
+  <link rel="stylesheet" href="/static/css/member.css">
+  <title>台北一日遊</title>
 </head>
 <body>
+  <nav>
+    <div class="navigation">
+
+      <div class="logo">
+        <a href="/">台北一日遊</a>
+      </div>
+
+      <div class="nav-menu">
+        <div class="nav-item" id="booking-button">預定行程</div>
+        <div class="nav-item" id="login-register-button">登入/註冊</div>
+      </div>
+
+    </div>
+  </nav>
+
+  <!-- 會員登入 / 註冊視窗 -->
+  <div class="dialog-overlay" id="dialog-overlay">
+    <div class="member-dialog" id="signin-dialog">
+      <!-- Dialog 上方裝飾色條 -->
+      <div class="dialog-decorator"></div>
+
+      <button class="dialog-close" id="dialog-close">
+        <img src="/static/images/close.png" alt="關閉">
+      </button>
+
+      <div class="dialog-main">
+        <h2 class="dialog-title">登入會員帳號</h2>
+
+        <div class="dialog-form">
+          <input
+            type="email"
+            id="signin-email"
+            class="dialog-input"
+            placeholder="輸入電子信箱"
+          >
+
+          <input
+            type="password"
+            id="signin-password"
+            class="dialog-input"
+            placeholder="輸入密碼"
+          >
+
+          <button
+            type="button"
+            class="dialog-button"
+            id="signin-button"
+          >
+            登入帳戶
+          </button>
+        </div>
+
+        <!-- 登入錯誤訊息之後會由 JavaScript 放進來 -->
+        <div class="dialog-message" id="signin-message"></div>
+
+        <div class="dialog-switch">
+          還沒有帳戶？<span id="show-signup">點此註冊</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="member-dialog" id="signup-dialog">
+      <!-- Dialog 上方裝飾色條 -->
+      <div class="dialog-decorator"></div>
+
+      <button class="dialog-close" id="signup-close">
+        <img src="/static/images/close.png" alt="關閉">
+      </button>
+
+      <div class="dialog-main">
+        <h2 class="dialog-title">註冊會員帳號</h2>
+
+        <div class="dialog-form">
+          <input
+            type="text"
+            id="signup-name"
+            class="dialog-input"
+            placeholder="輸入姓名"
+          >
+
+          <input
+            type="email"
+            id="signup-email"
+            class="dialog-input"
+            placeholder="輸入電子郵件"
+          >
+
+          <input
+            type="password"
+            id="signup-password"
+            class="dialog-input"
+            placeholder="輸入密碼"
+          >
+
+          <button
+            type="button"
+            class="dialog-button"
+            id="signup-button"
+          >
+            註冊新帳戶
+          </button>
+        </div>
+
+        <!-- 註冊錯誤訊息之後會由 JavaScript 放進來 -->
+        <div class="dialog-message" id="signup-message"></div>
+
+        <div class="dialog-switch">
+          已經有帳戶了？<span id="show-signin">點此登入</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <main>
+    <!-- 預定頁面標題 -->
+    <div class="booking-headline">
+      您好，<span id="booking-member-name"></span>，待預訂的行程如下：
+    </div>
+
+    <!-- 沒有預定行程時顯示 -->
+    <div class="booking-empty-state">
+      目前沒有任何待預訂的行程
+    </div>
+
+    <!-- 有預定行程時顯示 -->
+    <section class="booking-section">
+
+      <!-- 景點圖片 -->
+      <div class="booking-picture">
+        <img
+          id="booking-attraction-image"
+          src=""
+          alt="預定景點圖片"
+        >
+      </div>
+
+      <!-- 景點資訊 -->
+      <div class="booking-information">
+
+        <div class="booking-info-row booking-info-title">
+          台北一日遊：<span id="booking-attraction-name"></span>
+        </div>
+
+        <div class="booking-info-row">
+          <span class="booking-info-label">日期：</span>
+          <span id="booking-date"></span>
+        </div>
+
+        <div class="booking-info-row">
+          <span class="booking-info-label">時間：</span>
+          <span id="booking-time"></span>
+        </div>
+
+        <div class="booking-info-row">
+          <span class="booking-info-label">費用：</span>
+          <span id="booking-price"></span>
+        </div>
+
+        <div class="booking-info-row">
+          <span class="booking-info-label">地點：</span>
+          <span id="booking-address"></span>
+        </div>
+
+      </div>
+
+      <!-- 刪除預定 -->
+      <button
+        type="button"
+        class="booking-delete-button"
+        id="booking-delete-button"
+      >
+        <img
+          src="/static/images/delete.png"
+          alt="刪除預定行程"
+        >
+      </button>
+
+    </section>
+
+    <!-- 第一條分隔線 -->
+    <div class="main-separator"></div>
+
+    <!-- 聯絡資訊 -->
+    <section class="contact-form">
+
+      <div class="contact-title">
+        您的聯絡資訊
+      </div>
+
+      <div class="contact-field">
+        <label for="contact-name">
+          聯絡姓名：
+        </label>
+
+        <input
+          type="text"
+          id="contact-name"
+        >
+      </div>
+
+      <div class="contact-field">
+        <label for="contact-email">
+          連絡信箱：
+        </label>
+
+        <input
+          type="email"
+          id="contact-email"
+        >
+      </div>
+
+      <div class="contact-field">
+        <label for="contact-phone">
+          手機號碼：
+        </label>
+
+        <input
+          type="tel"
+          id="contact-phone"
+        >
+      </div>
+
+      <div class="contact-notice">
+        請保持手機暢通，準時到達，導覽人員將用手機與您聯繫，務必留下正確的聯絡方式。
+      </div>
+
+    </section>
+
+    <!-- 第二條分隔線 -->
+    <div class="main-separator"></div>
+
+    <!-- 信用卡付款資訊 -->
+    <section class="payment">
+
+      <div class="payment-title">
+        信用卡付款資訊
+      </div>
+
+      <div class="payment-field">
+        <label for="card-number">
+          卡片號碼：
+        </label>
+
+        <input
+          type="text"
+          id="card-number"
+          placeholder="**** **** **** ****"
+        >
+      </div>
+
+      <div class="payment-field">
+        <label for="card-expiration">
+          過期時間：
+        </label>
+
+        <input
+          type="text"
+          id="card-expiration"
+          placeholder="MM / YY"
+        >
+      </div>
+
+
+      <div class="payment-field">
+        <label for="card-cvv">
+          驗證密碼：
+        </label>
+
+        <input
+          type="text"
+          id="card-cvv"
+          placeholder="CVV"
+        >
+      </div>
+
+    </section>
+
+    <!-- 第三條分隔線 -->
+    <div class="main-separator"></div>
+
+    <!-- 確認付款 -->
+    <section class="confirm">
+
+      <div class="confirm-total">
+        總價：新台幣 <span id="confirm-price"></span> 元
+      </div>
+
+      <button
+        type="button"
+        class="confirm-button"
+        id="confirm-button"
+      >
+        確認訂購並付款
+      </button>
+
+    </section>
+
+  </main>
+
+  <footer>
+    <div class="footer-content">
+      COPYRIGHT © 2021 台北一日遊
+    </div>
+  </footer>
+
+  <script src="/static/js/booking.js"></script>
+  <script src="/static/js/member.js"></script>
   
 </body>
 </html>

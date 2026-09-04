@@ -40,6 +40,13 @@ class UserSignin(BaseModel):
 	email: str
 	password: str
 
+# 預定行程資料格式
+class BookingCreate(BaseModel):
+	attractionId: int
+	date: str
+	time: str
+	price: int
+
 # ==================================================================
 # API：註冊一個新的會員
 @app.post("/api/user")
@@ -245,6 +252,381 @@ async def get_current_user(authorization: str | None = Header(default=None)):
 			"data": None
 		}
 
+# ==================================================================
+# API：建立新的預定行程
+@app.post("/api/booking")
+async def create_booking(
+	booking: BookingCreate,
+	authorization: str | None = Header(default=None)
+):
+	# 如果沒有 Authorization Header，代表目前未登入
+	if authorization is None:
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# Authorization Header 必須以 Bearer 開頭
+	if not authorization.startswith("Bearer "):
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# 移除 Bearer 前綴，取得 JWT Token
+	token = authorization.replace("Bearer ", "", 1)
+
+	try:
+		# 解碼並驗證 JWT Token
+		payload = jwt.decode(
+			token,
+			SECRET_KEY,
+			algorithms=[ALGORITHM]
+		)
+
+		# 從 Token 取得目前登入會員的 id
+		user_id = payload["id"]
+
+	except Exception as error:
+		print(error)
+
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# 檢查輸入資料是否正確
+	if (
+		booking.attractionId <= 0
+		or not booking.date
+		or booking.time not in ["morning", "afternoon"]
+		or booking.price <= 0
+	):
+		return JSONResponse(
+			status_code=400,
+			content={
+				"error": True,
+				"message": "建立失敗，輸入不正確或其他原因"
+			}
+		)
+
+	# 預先設定為 None，避免資料庫連線失敗時無法執行 finally
+	connection = None
+	cursor = None
+
+	try:
+		# 連接 MySQL 資料庫
+		connection = mysql.connector.connect(
+			host="localhost",
+			user="root",
+			password="123456",
+			database="taipei_day_trip"
+		)
+
+		cursor = connection.cursor()
+
+		# 檢查景點是否存在
+		cursor.execute("""
+			SELECT id
+			FROM attractions
+			WHERE id = %s
+		""", (booking.attractionId,))
+
+		attraction = cursor.fetchone()
+
+		if attraction is None:
+			return JSONResponse(
+				status_code=400,
+				content={
+					"error": True,
+					"message": "建立失敗，輸入不正確或其他原因"
+				}
+			)
+
+		# 刪除目前會員原本的預定行程
+		cursor.execute("""
+			DELETE FROM bookings
+			WHERE user_id = %s
+		""", (user_id,))
+
+		# 建立新的預定行程
+		cursor.execute("""
+			INSERT INTO bookings (
+				user_id,
+				attraction_id,
+				date,
+				time,
+				price
+			)
+			VALUES (%s, %s, %s, %s, %s)
+		""", (
+			user_id,
+			booking.attractionId,
+			booking.date,
+			booking.time,
+			booking.price
+		))
+
+		# 儲存資料庫變更
+		connection.commit()
+
+		return {
+			"ok": True
+		}
+
+	except Exception as error:
+		print(error)
+
+		return JSONResponse(
+			status_code=500,
+			content={
+				"error": True,
+				"message": "伺服器內部錯誤"
+			}
+		)
+
+	finally:
+		if cursor is not None:
+			cursor.close()
+
+		if connection is not None and connection.is_connected():
+			connection.close()
+
+# ==================================================================
+# API：取得目前的預定行程
+@app.get("/api/booking")
+async def get_booking(
+	authorization: str | None = Header(default=None)
+):
+	# 如果沒有 Authorization Header，代表目前未登入
+	if authorization is None:
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# Authorization Header 必須以 Bearer 開頭
+	if not authorization.startswith("Bearer "):
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# 移除 Bearer 前綴，取得 JWT Token
+	token = authorization.replace("Bearer ", "", 1)
+
+	try:
+		# 解碼並驗證 JWT Token
+		payload = jwt.decode(
+			token,
+			SECRET_KEY,
+			algorithms=[ALGORITHM]
+		)
+
+		# 從 Token 取得目前登入會員的 id
+		user_id = payload["id"]
+
+	except Exception as error:
+		print(error)
+
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# 預先設定為 None，避免資料庫連線失敗時無法執行 finally
+	connection = None
+	cursor = None
+
+	try:
+		# 連接 MySQL 資料庫
+		connection = mysql.connector.connect(
+			host="localhost",
+			user="root",
+			password="123456",
+			database="taipei_day_trip"
+		)
+
+		cursor = connection.cursor(dictionary=True)
+
+		# 查詢目前會員的預定行程，並取得景點資料
+		cursor.execute("""
+			SELECT
+				b.attraction_id,
+				b.date,
+				b.time,
+				b.price,
+				a.name,
+				a.address,
+				a.images
+			FROM bookings AS b
+			JOIN attractions AS a
+				ON b.attraction_id = a.id
+			WHERE b.user_id = %s
+		""", (user_id,))
+
+		booking = cursor.fetchone()
+
+		# 如果目前沒有預定行程，回傳 data: null
+		if booking is None:
+			return {
+				"data": None
+			}
+
+		# 將景點圖片 JSON 字串轉成 list
+		images = json.loads(booking["images"])
+
+		# 取第一張圖片
+		image = images[0] if len(images) > 0 else None
+
+		# 回傳預定行程資料
+		return {
+			"data": {
+				"attraction": {
+					"id": booking["attraction_id"],
+					"name": booking["name"],
+					"address": booking["address"],
+					"image": image
+				},
+				"date": booking["date"].strftime("%Y-%m-%d"),
+				"time": booking["time"],
+				"price": booking["price"]
+			}
+		}
+
+	except Exception as error:
+		print(error)
+
+		return JSONResponse(
+			status_code=500,
+			content={
+				"error": True,
+				"message": "伺服器內部錯誤"
+			}
+		)
+
+	finally:
+		if cursor is not None:
+			cursor.close()
+
+		if connection is not None and connection.is_connected():
+			connection.close()
+
+# ==================================================================
+# API：刪除目前的預定行程
+@app.delete("/api/booking")
+async def delete_booking(
+	authorization: str | None = Header(default=None)
+):
+	# 如果沒有 Authorization Header，代表目前未登入
+	if authorization is None:
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# Authorization Header 必須以 Bearer 開頭
+	if not authorization.startswith("Bearer "):
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# 移除 Bearer 前綴，取得 JWT Token
+	token = authorization.replace("Bearer ", "", 1)
+
+	try:
+		# 解碼並驗證 JWT Token
+		payload = jwt.decode(
+			token,
+			SECRET_KEY,
+			algorithms=[ALGORITHM]
+		)
+
+		# 從 Token 取得目前登入會員的 id
+		user_id = payload["id"]
+
+	except Exception as error:
+		print(error)
+
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# 預先設定為 None，避免資料庫連線失敗時無法執行 finally
+	connection = None
+	cursor = None
+
+	try:
+		# 連接 MySQL 資料庫
+		connection = mysql.connector.connect(
+			host="localhost",
+			user="root",
+			password="123456",
+			database="taipei_day_trip"
+		)
+
+		cursor = connection.cursor()
+
+		# 刪除目前會員的預定行程
+		cursor.execute("""
+			DELETE FROM bookings
+			WHERE user_id = %s
+		""", (user_id,))
+
+		# 儲存資料庫變更
+		connection.commit()
+
+		return {
+			"ok": True
+		}
+
+	except Exception as error:
+		print(error)
+
+		return JSONResponse(
+			status_code=500,
+			content={
+				"error": True,
+				"message": "伺服器內部錯誤"
+			}
+		)
+
+	finally:
+		if cursor is not None:
+			cursor.close()
+
+		if connection is not None and connection.is_connected():
+			connection.close()
+	
 # ==================================================================
 # API：取得景點資料(取得不同分頁的旅遊景點列表資料，也可以根據標題關鍵字、或捷運站名稱篩選)
 @app.get("/api/attractions")

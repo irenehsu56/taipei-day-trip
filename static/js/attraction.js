@@ -18,6 +18,11 @@ const attractionImage = document.querySelector(".attraction-image");
 // 取得圖片指示器容器
 const indicatorBar = document.querySelector(".indicator-bar");
 
+// 取得預定日期輸入框
+const bookingDateInput = document.querySelector("#booking-date-input");
+// 取得開始預訂行程按鈕
+const startBookingButton = document.querySelector("#start-booking-button");
+
 // 儲存目前景點的所有圖片
 let attractionImages = [];
 // 紀錄目前顯示的圖片位置
@@ -176,6 +181,77 @@ bookingTimeOptions.forEach((option) => {
             bookingPrice.textContent = "新台幣 2500 元";
         }
     });
+});
+
+// ===========================================================
+// 點擊「開始預約行程」時，確認會員登入狀態
+startBookingButton.addEventListener("click", async () => {
+    // 從 LocalStorage 取得 JWT Token
+    const token = localStorage.getItem("token");
+
+    // 呼叫後端 API：確認目前會員登入狀態
+    const response = await fetch("/api/user/auth", {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    });
+
+    // 將 API 回傳資料轉成 JavaScript 物件
+    const result = await response.json();
+
+    // 如果目前沒有登入會員
+    if (result.data === null) {
+        // 顯示 Dialog 背景遮罩
+        dialogOverlay.style.display = "block";
+        // 顯示登入 Dialog
+        signinDialog.style.display = "block";
+        // 隱藏註冊 Dialog
+        signupDialog.style.display = "none";
+
+        return;
+    }
+
+    // 取得選擇的日期
+    const date = bookingDateInput.value;
+    // 取得選擇的時間
+    const selectedTime = document.querySelector(
+        'input[name="booking-time"]:checked'
+    );
+    const time = selectedTime.value;
+
+    // 根據選擇的時間決定價格
+    let price;
+
+    if (time === "morning") {
+        price = 2000;
+    } else {
+        price = 2500;
+    }
+
+    // 呼叫後端 API：建立新的預定行程
+    const bookingResponse = await fetch("/api/booking", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({
+            attractionId: Number(attractionId),
+            date: date,
+            time: time,
+            price: price
+        })
+    });
+
+    // 將 API 回傳資料轉成 JavaScript 物件
+    const bookingResult = await bookingResponse.json();
+
+    // 如果成功建立預定行程
+    if (bookingResponse.ok) {
+        // 前往預定行程頁面
+        window.location.href = "/booking";
+    }
 });
 
 // ===========================================================
