@@ -247,40 +247,37 @@
       </div>
 
       <div class="payment-field">
-        <label for="card-number">
+        <label>
           卡片號碼：
         </label>
 
-        <input
-          type="text"
+        <div
           id="card-number"
-          placeholder="**** **** **** ****"
-        >
+          class="tpfield"
+        ></div>
       </div>
 
       <div class="payment-field">
-        <label for="card-expiration">
+        <label>
           過期時間：
         </label>
 
-        <input
-          type="text"
+        <div
           id="card-expiration"
-          placeholder="MM / YY"
-        >
+          class="tpfield"
+        ></div>
       </div>
 
 
       <div class="payment-field">
-        <label for="card-cvv">
+        <label>
           驗證密碼：
         </label>
 
-        <input
-          type="text"
-          id="card-cvv"
-          placeholder="CVV"
-        >
+        <div
+          id="card-ccv"
+          class="tpfield"
+        ></div>
       </div>
 
     </section>
@@ -313,6 +310,7 @@
     </div>
   </footer>
 
+  <script src="https://js.tappaysdk.com/sdk/tpdirect/v5.14.0"></script>
   <script src="/static/js/booking.js"></script>
   <script src="/static/js/member.js"></script>
   
