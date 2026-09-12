@@ -6,6 +6,7 @@ import json
 from pydantic import BaseModel
 import jwt
 import requests
+import os
 from datetime import datetime, timedelta, timezone
 app=FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -14,7 +15,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 SECRET_KEY = "taipei-day-trip-secret-key"
 ALGORITHM = "HS256"
 
-PARTNER_KEY = "partner_tbG9ysdcXupsmbhK1aMnF25O5h43kJxQdWWSAxbqHudJQzAq1iXjcsq9"
+PARTNER_KEY = os.getenv("TAPPAY_PARTNER_KEY")
 MERCHANT_ID = "tppf_irenehsu_GP_POS_1"
 
 TAPPAY_URL = "https://sandbox.tappaysdk.com/tpc/payment/pay-by-prime"
@@ -1181,6 +1182,12 @@ async def create_order(
 				WHERE id = %s
 			""", (order_id,))
 
+			# 刪除目前會員的預定行程
+			cursor.execute("""
+				DELETE FROM bookings
+				WHERE user_id = %s
+			""", (user_id,))
+
 			connection.commit()
 
 		# 回傳訂單編號與付款結果
@@ -1205,6 +1212,153 @@ async def create_order(
 			}
 		)
 	
+	finally:
+		if cursor is not None:
+			cursor.close()
+
+		if connection is not None and connection.is_connected():
+			connection.close()
+
+# ==================================================================
+# API：根據訂單編號取得訂單資訊
+@app.get("/api/order/{orderNumber}")
+async def get_order(
+	orderNumber: str,
+	authorization: str | None = Header(default=None)
+):
+	# 如果沒有 Authorization Header，代表目前未登入
+	if authorization is None:
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# Authorization Header 必須以 Bearer 開頭
+	if not authorization.startswith("Bearer "):
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# 移除 Bearer 前綴，取得 JWT Token
+	token = authorization.replace("Bearer ", "", 1)
+
+	try:
+		# 解碼並驗證 JWT Token
+		payload = jwt.decode(
+			token,
+			SECRET_KEY,
+			algorithms=[ALGORITHM]
+		)
+
+		# 從 Token 取得目前登入會員的 id
+		user_id = payload["id"]
+
+	except Exception as error:
+		print(error)
+
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# 預先設定為 None，避免資料庫連線失敗時無法執行 finally
+	connection = None
+	cursor = None
+
+	try:
+		# 連接 MySQL 資料庫
+		connection = mysql.connector.connect(
+			host="localhost",
+			user="root",
+			password="123456",
+			database="taipei_day_trip"
+		)
+
+		cursor = connection.cursor(dictionary=True)
+
+		# 根據訂單編號查詢目前會員的訂單資料
+		cursor.execute("""
+			SELECT
+				o.number,
+				o.price,
+				o.date,
+				o.time,
+				o.contact_name,
+				o.contact_email,
+				o.contact_phone,
+				o.status,
+				a.id AS attraction_id,
+				a.name AS attraction_name,
+				a.address AS attraction_address,
+				a.images
+			FROM orders AS o
+			JOIN attractions AS a
+				ON o.attraction_id = a.id
+			WHERE o.number = %s
+			  AND o.user_id = %s
+		""", (
+			orderNumber,
+			user_id
+		))
+
+		order_data = cursor.fetchone()
+
+		# 如果查不到訂單，回傳 data: null
+		if order_data is None:
+			return {
+				"data": None
+			}
+
+		# 將景點圖片 JSON 字串轉成 list
+		images = json.loads(order_data["images"])
+
+		# 取第一張圖片
+		image = images[0] if len(images) > 0 else None
+
+		return {
+			"data": {
+				"number": order_data["number"],
+				"price": order_data["price"],
+				"trip": {
+					"attraction": {
+						"id": order_data["attraction_id"],
+						"name": order_data["attraction_name"],
+						"address": order_data["attraction_address"],
+						"image": image
+					},
+					"date": order_data["date"].strftime("%Y-%m-%d"),
+					"time": order_data["time"]
+				},
+				"contact": {
+					"name": order_data["contact_name"],
+					"email": order_data["contact_email"],
+					"phone": order_data["contact_phone"]
+				},
+				"status": order_data["status"]
+			}
+		}
+
+	except Exception as error:
+		print(error)
+
+		return JSONResponse(
+			status_code=500,
+			content={
+				"error": True,
+				"message": "伺服器內部錯誤"
+			}
+		)
+
 	finally:
 		if cursor is not None:
 			cursor.close()
