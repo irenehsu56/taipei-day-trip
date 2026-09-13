@@ -290,7 +290,7 @@ main {
   line-height: 13.3px;
   color: #666666;
 }
-.payment-field input {
+.tpfield {
   width: 200px;
   height: 38px;
   padding: 10px;
@@ -298,17 +298,6 @@ main {
   background-color: #FFFFFF;
   border: 1px solid #E8E8E8;
   border-radius: 5px;
-  outline: none;
-
-  font-family: "Noto Sans TC", sans-serif;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 13.3px;
-  color: #000000;
-}
-.payment-field input::placeholder {
-  color: #757575;
-  opacity: 1;
 }
 /* ================================================== */
 .confirm {

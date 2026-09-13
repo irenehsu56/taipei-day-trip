@@ -1,3 +1,46 @@
+// 初始化 TapPay SDK
+TPDirect.setupSDK(
+    171069,
+    "app_5D1YKFZdnlNHBR6eZ2mcYR2aQw0Co7Sl76C1hNOvUSowpu921cNUbU8C772x",
+    "sandbox"
+);
+
+// 設定 TapPay 信用卡輸入欄位
+TPDirect.card.setup({
+    fields: {
+        number: {
+            element: "#card-number",
+            placeholder: "**** **** **** ****"
+        },
+        expirationDate: {
+            element: "#card-expiration",
+            placeholder: "MM / YY"
+        },
+        ccv: {
+            element: "#card-ccv",
+            placeholder: "CVV"
+        }
+    },
+    styles: {
+        "input": {
+            "color": "#000000",
+            "font-size": "16px"
+        },
+        "input::placeholder": {
+            "color": "#757575"
+        },
+        ":focus": {
+            "color": "#000000"
+        },
+        ".valid": {
+            "color": "green"
+        },
+        ".invalid": {
+            "color": "red"
+        }
+    }
+});
+
 // 取得會員姓名
 const bookingMemberName = document.querySelector("#booking-member-name");
 // 取得沒有預定行程時顯示的區塊
@@ -24,6 +67,8 @@ const bookingDeleteButton = document.querySelector("#booking-delete-button");
 const contactName = document.querySelector("#contact-name");
 // 取得聯絡信箱輸入框
 const contactEmail = document.querySelector("#contact-email");
+// 取得聯絡電話輸入框
+const contactPhone = document.querySelector("#contact-phone");
 // 取得總價
 const confirmPrice = document.querySelector("#confirm-price");
 // 取得所有分隔線
@@ -34,6 +79,11 @@ const contactForm = document.querySelector(".contact-form");
 const payment = document.querySelector(".payment");
 // 取得確認付款區塊
 const confirmSection = document.querySelector(".confirm");
+// 取得確認訂購並付款按鈕
+const confirmButton = document.querySelector("#confirm-button");
+
+// 儲存目前的預定行程資料
+let currentBooking = null;
 
 // ===========================================================
 // 取得目前登入的會員資訊
@@ -120,7 +170,8 @@ async function getBooking() {
     bookingEmptyState.style.display = "none";
 
     // 取得預定行程資料
-    const booking = result.data;
+    currentBooking = result.data;
+    const booking = currentBooking; 
 
     // 將景點圖片顯示在頁面
     bookingAttractionImage.src = booking.attraction.image;
@@ -164,6 +215,84 @@ bookingDeleteButton.addEventListener("click", async () => {
         // 重新整理頁面
         window.location.reload();
     }
+});
+
+// ===========================================================
+// 點擊確認訂購並付款時，向 TapPay 取得 Prime
+confirmButton.addEventListener("click", () => {
+    // 先確認信用卡欄位是否都填寫正確
+    const tappayStatus = TPDirect.card.getTappayFieldsStatus();
+
+    if (!tappayStatus.canGetPrime) {
+        alert("信用卡資訊有誤，請確認後再試一次。");
+        return;
+    }
+
+    // 向 TapPay 取得 Prime
+    TPDirect.card.getPrime(async (result) => {
+        if (result.status !== 0) {
+            console.log("取得 Prime 失敗");
+            console.log(result);
+            return;
+        }
+
+        const prime = result.card.prime;
+
+        // 從 LocalStorage 取得 JWT Token
+        const token = localStorage.getItem("token");
+
+        // 組成建立訂單 API 需要的資料
+        const orderData = {
+            prime: prime,
+            order: {
+                price: currentBooking.price,
+                trip: {
+                    attraction: {
+                        id: currentBooking.attraction.id,
+                        name: currentBooking.attraction.name,
+                        address: currentBooking.attraction.address,
+                        image: currentBooking.attraction.image
+                    },
+                    date: currentBooking.date,
+                    time: currentBooking.time
+                },
+                contact: {
+                    name: contactName.value,
+                    email: contactEmail.value,
+                    phone: contactPhone.value
+                }
+            }
+        };
+
+        console.log(orderData);
+
+        // 呼叫後端 API：建立訂單並付款
+        const response = await fetch("/api/orders", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`
+            },
+            body: JSON.stringify(orderData)
+        });
+
+        // 將 API 回傳資料轉成 JavaScript 物件
+        const orderResult = await response.json();
+
+        console.log(orderResult);
+
+        // 如果訂單建立且付款成功
+        if (
+            response.ok &&
+            orderResult.data.payment.status === 0
+        ) {
+            // 取得訂單編號
+            const orderNumber = orderResult.data.number;
+
+            // 導向感謝頁面，並將訂單編號放在網址參數中
+            window.location.href = `/thankyou?number=${orderNumber}`;
+        }
+    });
 });
 
 // ===========================================================
