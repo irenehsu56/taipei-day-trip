@@ -73,13 +73,10 @@ bookingButton.addEventListener("click", async () => {
 // ===========================================================
 // 點擊右上角會員按鈕時，依登入狀態執行對應功能
 loginRegisterButton.addEventListener("click", () => {
-    // 如果目前顯示「登出系統」，代表使用者已登入
-    if (loginRegisterButton.textContent === "登出系統") {
-        // 移除 LocalStorage 中的 JWT Token
-        localStorage.removeItem("token");
-
-        // 重新整理目前頁面
-        window.location.reload();
+    // 如果目前顯示「會員中心」，代表使用者已登入
+    if (loginRegisterButton.textContent === "會員中心") {
+        // 前往會員中心頁面
+        window.location.href = "/member";
 
         return;
     }
@@ -280,7 +277,7 @@ async function checkSigninStatus() {
 
     // 如果已經登入，顯示「登出系統」
     } else {
-        loginRegisterButton.textContent = "登出系統";
+        loginRegisterButton.textContent = "會員中心";
     }
 }
 

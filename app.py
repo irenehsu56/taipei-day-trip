@@ -3,14 +3,301 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 import mysql.connector
 import json
-from pydantic import BaseModel
+from pydantic import BaseModel, AnyHttpUrl
 import jwt
 import requests
 import os
+import secrets
 from datetime import datetime, timedelta, timezone
-app=FastAPI()
+from mcp.server import MCPServer
+from contextlib import asynccontextmanager
+from mcp.server.auth.provider import AccessToken, TokenVerifier
+from mcp.server.auth.settings import AuthSettings
+from mcp.server.auth.middleware.auth_context import get_access_token
+from mcp.server.transport_security import TransportSecuritySettings
+
+# ==================================================================
+# 根據 MCP Bearer Token 取得會員 id
+def get_user_id_by_mcp_token(mcp_token):
+
+    connection = None
+    cursor = None
+
+    try:
+        # 連接 MySQL 資料庫
+        connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="123456",
+            database="taipei_day_trip"
+        )
+
+        cursor = connection.cursor(dictionary=True)
+
+        # 使用 MCP Token 查詢對應會員
+        cursor.execute("""
+            SELECT id
+            FROM users
+            WHERE mcp_token = %s
+        """, (mcp_token,))
+
+        user = cursor.fetchone()
+
+        # 找不到對應會員
+        if user is None:
+            return None
+
+        # 回傳會員 id
+        return user["id"]
+
+    except Exception as error:
+        print(error)
+        return None
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+        if connection is not None and connection.is_connected():
+            connection.close()
+
+# ==================================================================
+# MCP Bearer Token 驗證
+class TaipeiDayTripTokenVerifier(TokenVerifier):
+
+    async def verify_token(self, token: str) -> AccessToken | None:
+
+        # 根據 MCP Token 找會員 id
+        user_id = get_user_id_by_mcp_token(token)
+
+        # 找不到會員，代表 Token 無效
+        if user_id is None:
+            return None
+
+        # Token 有效
+        return AccessToken(
+            token=token,
+            client_id=str(user_id),
+            scopes=["booking"],
+            subject=str(user_id)
+        )
+
+# ==================================================================
+# MCP Server
+mcp = MCPServer(
+    "台北一日遊",
+    token_verifier=TaipeiDayTripTokenVerifier(),
+    auth=AuthSettings(
+        issuer_url=AnyHttpUrl("http://127.0.0.1:8000"),
+        resource_server_url=AnyHttpUrl("http://127.0.0.1:8000/mcp"),
+        required_scopes=["booking"],
+        validate_token_resource=False
+    )
+)
+
+# MCP Tool：搜尋台北市景點
+@mcp.tool()
+def search_attractions(keyword: str):
+    """透過關鍵字和捷運站名稱搜尋台北市一日旅遊的景點。
+	搜尋結果包含景點 id、name 和 description。
+	回覆使用者搜尋結果時，請一併顯示每個景點的 id。
+	"""
+
+    connection = None
+    cursor = None
+
+    try:
+        # 連接 MySQL 資料庫
+        connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="123456",
+            database="taipei_day_trip"
+        )
+
+        cursor = connection.cursor(dictionary=True)
+
+        # 根據景點名稱或捷運站名稱搜尋景點
+        cursor.execute("""
+            SELECT
+                id,
+                name,
+                description
+            FROM attractions
+            WHERE name LIKE %s
+               OR mrt = %s
+        """, (
+            f"%{keyword}%",
+            keyword
+        ))
+
+        # 取得搜尋結果
+        attractions = cursor.fetchall()
+
+        # 回傳景點資料
+        return {
+            "data": attractions
+        }
+
+    except Exception as error:
+        print(error)
+
+        return {
+            "error": True
+        }
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+        if connection is not None and connection.is_connected():
+            connection.close()
+
+# ==================================================================
+# MCP Tool：預定景點導覽行程
+@mcp.tool()
+def book_attraction(
+    attraction_id: int,
+    date: str,
+    time: str,
+    price: int
+):
+    """根據景點編號、日期、時間、價格，預定一個景點導覽行程。
+	時間參數 time 只能使用 morning 或 afternoon：
+   	morning 代表早上 9 點到下午 4 點；
+	afternoon 代表下午 2 點到晚上 9 點。
+	"""
+
+    connection = None
+    cursor = None
+
+    try:
+        # 取得目前通過 MCP Bearer Token 驗證的會員
+        access_token = get_access_token()
+
+        if access_token is None or access_token.subject is None:
+            return {
+                "error": True,
+                "message": "MCP Token 無效"
+            }
+
+        user_id = int(access_token.subject)
+
+        # 檢查輸入資料
+        if (
+            attraction_id <= 0
+            or not date
+            or time not in ["morning", "afternoon"]
+            or price <= 0
+        ):
+            return {
+                "error": True,
+                "message": "建立失敗，輸入不正確或其他原因"
+            }
+
+        # 連接 MySQL
+        connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="123456",
+            database="taipei_day_trip"
+        )
+
+        cursor = connection.cursor()
+
+        # 檢查景點是否存在
+        cursor.execute("""
+            SELECT id
+            FROM attractions
+            WHERE id = %s
+        """, (attraction_id,))
+
+        attraction = cursor.fetchone()
+
+        if attraction is None:
+            return {
+                "error": True,
+                "message": "找不到指定的景點"
+            }
+
+        # 刪除目前會員原本的預定行程
+        cursor.execute("""
+            DELETE FROM bookings
+            WHERE user_id = %s
+        """, (user_id,))
+
+        # 建立新的預定行程
+        cursor.execute("""
+            INSERT INTO bookings (
+                user_id,
+                attraction_id,
+                date,
+                time,
+                price
+            )
+            VALUES (%s, %s, %s, %s, %s)
+        """, (
+            user_id,
+            attraction_id,
+            date,
+            time,
+            price
+        ))
+
+        connection.commit()
+
+        return {
+            "ok": True,
+            "message": "台北導覽行程，預定成功，請到 http://43.213.236.67:8000/booking 完成付款"
+        }
+
+    except Exception as error:
+        print(error)
+
+        if connection is not None:
+            connection.rollback()
+
+        return {
+            "error": True,
+            "message": "伺服器內部錯誤"
+        }
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+
+        if connection is not None and connection.is_connected():
+            connection.close()
+
+# ==================================================================
+# 建立 MCP Streamable HTTP App
+mcp_app = mcp.streamable_http_app(
+    transport_security=TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=[
+            "127.0.0.1:8000",
+            "localhost:8000",
+            "43.213.236.67:8000"
+        ],
+        allowed_origins=[
+            "http://127.0.0.1:8000",
+            "http://localhost:8000",
+            "http://43.213.236.67:8000"
+        ]
+    )
+)
+
+# MCP Session Manager
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    async with mcp.session_manager.run():
+        yield
+
+# FastAPI
+app = FastAPI(lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# ==================================================================
 # JWT 設定
 SECRET_KEY = "taipei-day-trip-secret-key"
 ALGORITHM = "HS256"
@@ -34,6 +321,12 @@ async def booking(request: Request):
 @app.get("/thankyou", include_in_schema=False)
 async def thankyou(request: Request):
 	return FileResponse("./static/thankyou.html", media_type="text/html")
+
+# ==================================================================
+# Member Page
+@app.get("/member", include_in_schema=False)
+async def member(request: Request):
+	return FileResponse("./static/member.html", media_type="text/html")
 
 # ==================================================================
 # 會員註冊資料格式
@@ -288,6 +581,224 @@ async def get_current_user(authorization: str | None = Header(default=None)):
 		return {
 			"data": None
 		}
+
+# ==================================================================
+# API：產生 / 更新 MCP Bearer Token
+@app.post("/api/member/token")
+async def generate_mcp_token(
+	authorization: str | None = Header(default=None)
+):
+
+	# 如果沒有 Authorization Header，代表目前未登入
+	if authorization is None:
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# Authorization Header 必須以 Bearer 開頭
+	if not authorization.startswith("Bearer "):
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# 移除 Bearer 前綴，取得 JWT Token
+	token = authorization.replace("Bearer ", "", 1)
+
+	try:
+		# 解碼並驗證 JWT Token
+		payload = jwt.decode(
+			token,
+			SECRET_KEY,
+			algorithms=[ALGORITHM]
+		)
+
+		# 從 Token 取得目前登入會員的 id
+		user_id = payload["id"]
+
+	except Exception as error:
+		print(error)
+
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# 產生新的 MCP Bearer Token
+	mcp_token = secrets.token_hex(32)
+
+	# 預先設定為 None
+	connection = None
+	cursor = None
+
+	try:
+		# 連接 MySQL 資料庫
+		connection = mysql.connector.connect(
+			host="localhost",
+			user="root",
+			password="123456",
+			database="taipei_day_trip"
+		)
+
+		cursor = connection.cursor()
+
+		# 將新的 MCP Token 儲存到目前會員
+		cursor.execute("""
+			UPDATE users
+			SET mcp_token = %s
+			WHERE id = %s
+		""", (
+			mcp_token,
+			user_id
+		))
+
+		# 儲存資料庫變更
+		connection.commit()
+
+		# 回傳新的 MCP Token
+		return {
+			"token": mcp_token
+		}
+
+	except Exception as error:
+		print(error)
+
+		if connection is not None:
+			connection.rollback()
+
+		return JSONResponse(
+			status_code=500,
+			content={
+				"error": True,
+				"message": "伺服器內部錯誤"
+			}
+		)
+
+	finally:
+		if cursor is not None:
+			cursor.close()
+
+		if connection is not None and connection.is_connected():
+			connection.close()
+
+# ==================================================================
+# API：取得目前會員的 MCP Bearer Token
+@app.get("/api/member/token")
+async def get_mcp_token(
+	authorization: str | None = Header(default=None)
+):
+
+	# 如果沒有 Authorization Header，代表目前未登入
+	if authorization is None:
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# Authorization Header 必須以 Bearer 開頭
+	if not authorization.startswith("Bearer "):
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# 移除 Bearer 前綴，取得登入用 JWT Token
+	token = authorization.replace("Bearer ", "", 1)
+
+	try:
+		# 解碼並驗證 JWT Token
+		payload = jwt.decode(
+			token,
+			SECRET_KEY,
+			algorithms=[ALGORITHM]
+		)
+
+		# 從 Token 取得目前登入會員的 id
+		user_id = payload["id"]
+
+	except Exception as error:
+		print(error)
+
+		return JSONResponse(
+			status_code=403,
+			content={
+				"error": True,
+				"message": "未登入系統，拒絕存取"
+			}
+		)
+
+	# 預先設定為 None
+	connection = None
+	cursor = None
+
+	try:
+		# 連接 MySQL 資料庫
+		connection = mysql.connector.connect(
+			host="localhost",
+			user="root",
+			password="123456",
+			database="taipei_day_trip"
+		)
+
+		cursor = connection.cursor(dictionary=True)
+
+		# 查詢目前會員的 MCP Token
+		cursor.execute("""
+			SELECT mcp_token
+			FROM users
+			WHERE id = %s
+		""", (user_id,))
+
+		user = cursor.fetchone()
+
+		# 找不到會員
+		if user is None:
+			return JSONResponse(
+				status_code=400,
+				content={
+					"error": True,
+					"message": "找不到會員資料"
+				}
+			)
+
+		# 回傳目前會員的 MCP Token
+		return {
+			"token": user["mcp_token"]
+		}
+
+	except Exception as error:
+		print(error)
+
+		return JSONResponse(
+			status_code=500,
+			content={
+				"error": True,
+				"message": "伺服器內部錯誤"
+			}
+		)
+
+	finally:
+		if cursor is not None:
+			cursor.close()
+
+		if connection is not None and connection.is_connected():
+			connection.close()
 
 # ==================================================================
 # API：建立新的預定行程
@@ -1365,3 +1876,7 @@ async def get_order(
 
 		if connection is not None and connection.is_connected():
 			connection.close()
+
+# ==================================================================
+# MCP Server
+app.mount("/", mcp_app)

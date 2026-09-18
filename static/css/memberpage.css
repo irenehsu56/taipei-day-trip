@@ -67,41 +67,76 @@ nav {
 main {
     width: 100%;
     max-width: 1200px;
-    min-height: 300px;
 
     margin: 54px auto 0;
     padding: 40px 10px;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.thankyou-section {
-    text-align: center;
     color: #666666;
 }
-.thankyou-title {
-    margin-bottom: 20px;
-
-    font-size: 24px;
+.member-container {
+    width: 100%;
+    max-width: 980px;
+    margin: 0 auto;
+}
+.member-welcome {
+    padding: 10px 0 40px;
+}
+.member-welcome h2 {
+    font-size: 19px;
     font-weight: 700;
 }
-.thankyou-message {
-    margin-bottom: 10px;
+.member-container hr {
+    border: none;
+    border-top: 1px solid #E8E8E8;
+}
+/* ================================================== */
+.mcp-section {
+    padding: 45px 0;
+}
+.mcp-section h2 {
+    margin-bottom: 25px;
 
+    font-size: 19px;
+    font-weight: 700;
+}
+.mcp-content {
     font-size: 16px;
     font-weight: 500;
 }
-.thankyou-number {
+.mcp-content p {
     margin-bottom: 20px;
-
-    font-size: 18px;
-    font-weight: 700;
-    color: #448899;
 }
-.thankyou-notice {
-    font-size: 16px;
-    font-weight: 500;
+.mcp-content ul {
+    margin-left: 55px;
+}
+.mcp-content li {
+    margin-bottom: 15px;
+    padding-left: 5px;
+}
+.mcp-content li div + div {
+    margin-top: 8px;
+}
+#bearer-token {
+    overflow-wrap: anywhere;
+}
+/* ================================================== */
+#generate-token-button,
+#logout-button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+
+    background-color: #448899;
+    color: #FFFFFF;
+
+    font-size: 19px;
+    font-weight: 400;
+    cursor: pointer;
+}
+#generate-token-button {
+    margin-top: 10px;
+}
+.logout-section {
+    padding: 45px 0 5px;
 }
 /* ================================================== */
 footer {
@@ -111,10 +146,9 @@ footer {
 
     display: flex;
     justify-content: center;
-    align-items: flex-start;
+    align-items: center;
 
     flex: 1;
-    padding-top: 45px;
 }
 .footer-content {
     font-size: 16px;

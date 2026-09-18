@@ -1,0 +1,11 @@
+interface:
+  display_name: "Taipei Day Trip Booking"
+  short_description: "Search Taipei attractions and add a booking"
+  default_prompt: "Use $taipei-day-trip-booking to search for a Taipei attraction and add it to my booking cart."
+
+dependencies:
+  tools:
+    - type: "mcp"
+      value: "taipei-day-trip"
+      description: "Search Taipei attractions and manage bookings"
+      transport: "streamable_http"
