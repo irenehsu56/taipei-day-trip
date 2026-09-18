@@ -14,6 +14,7 @@ from contextlib import asynccontextmanager
 from mcp.server.auth.provider import AccessToken, TokenVerifier
 from mcp.server.auth.settings import AuthSettings
 from mcp.server.auth.middleware.auth_context import get_access_token
+from mcp.server.transport_security import TransportSecuritySettings
 
 # ==================================================================
 # 根據 MCP Bearer Token 取得會員 id
@@ -270,7 +271,21 @@ def book_attraction(
 
 # ==================================================================
 # 建立 MCP Streamable HTTP App
-mcp_app = mcp.streamable_http_app()
+mcp_app = mcp.streamable_http_app(
+    transport_security=TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=[
+            "127.0.0.1:8000",
+            "localhost:8000",
+            "43.213.236.67:8000"
+        ],
+        allowed_origins=[
+            "http://127.0.0.1:8000",
+            "http://localhost:8000",
+            "http://43.213.236.67:8000"
+        ]
+    )
+)
 
 # MCP Session Manager
 @asynccontextmanager

@@ -2,7 +2,8 @@
   "mcpServers": {
     "taipei-day-trip": {
       "type": "http",
-      "url": "${TAIPEI_DAY_TRIP_MCP_URL}"
+      "url": "http://43.213.236.67:8000/mcp", 
+      "bearer_token_env_var": "MCP_BEARER_TOKEN"
     }
   }
 }
