@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "taipei-day-trip": {
+      "type": "http",
+      "url": "${TAIPEI_DAY_TRIP_MCP_URL}"
+    }
+  }
+}

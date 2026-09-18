@@ -1,0 +1,26 @@
+{
+  "name": "taipei-day-trip",
+  "version": "0.1.0+codex.20260917135250",
+  "description": "Search Taipei attractions by keyword and add a selected date and time to the booking cart through the Taipei Day Trip MCP server.",
+  "author": {
+    "name": "Personal"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Taipei Day Trip",
+    "shortDescription": "Search attractions and add a booking.",
+    "longDescription": "Search Taipei attractions by keyword, choose an attraction ID, date, and morning or afternoon time, then add it to the booking cart.",
+    "developerName": "Personal",
+    "category": "Travel",
+    "capabilities": [
+      "Search",
+      "Booking"
+    ],
+    "defaultPrompt": [
+      "Search for museums in Taipei.",
+      "Find Taipei attractions matching a keyword.",
+      "Add a Taipei attraction to my booking cart."
+    ]
+  },
+  "mcpServers": "./.mcp.json"
+}
